@@ -9,3 +9,7 @@ env/
 build/
 .env/
 .env
+logs/
+.logs
+debug.log
+errors.log

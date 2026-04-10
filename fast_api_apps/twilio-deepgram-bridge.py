@@ -356,8 +356,9 @@ async def generate_llm_response(user_text):
 # DEEPGRAM CONNECT
 # ============================
 def deepgram_connect():
+    deepgram_api_key = os.environ.get("DEEPGRAM_API_KEY", "")
     extra_headers = {
-        'Authorization': 'Token f14c89d16e1e8a6fa7e3f5e355caa5baa4c8b510' # get dynamic value from env or db
+        'Authorization': f"Token {deepgram_api_key}"
     }
     deepgram_ws = websockets.connect(
     "wss://api.deepgram.com/v1/listen?"

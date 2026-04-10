@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AuthinticationConfig(AppConfig):
+class AuditorDashboardConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'authintication'
+    name = 'apps.dashboard.auditor_dashboard'

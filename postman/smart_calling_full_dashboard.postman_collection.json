@@ -1,0 +1,863 @@
+{
+  "info": {
+    "name": "Smart Calling Service — Full Dashboard API",
+    "description": "Complete Postman collection for all dashboard APIs:\n- Auth\n- Saler Dashboard\n- Manager Dashboard\n- Admin Dashboard\n- Auditor Dashboard\n- Support Dashboard\n\nStart by running **Auth > Sign In** to auto-capture the JWT access token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "e7c14f92-bb0a-4b44-aef9-bc9a1d2c5f38"
+  },
+  "variable": [
+    { "key": "base_url",       "value": "http://127.0.0.1:8000" },
+    { "key": "access_token",   "value": "" },
+    { "key": "campaign_id",    "value": "" },
+    { "key": "contact_id",     "value": "" },
+    { "key": "lead_id",        "value": "" },
+    { "key": "target_id",      "value": "" },
+    { "key": "mgr_campaign_id","value": "" },
+    { "key": "mgr_target_id",  "value": "" },
+    { "key": "adm_campaign_id","value": "" },
+    { "key": "adm_target_id",  "value": "" },
+    { "key": "setting_id",     "value": "" },
+    { "key": "ticket_id",      "value": "" },
+    { "key": "call_id",        "value": "" },
+    { "key": "preset_id",      "value": "" },
+    { "key": "bookmark_id",    "value": "" },
+    { "key": "aud_setting_id", "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign In",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                "const d = pm.response.json();",
+                "if (d && d.access) pm.collectionVariables.set('access_token', d.access);"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"your_password_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/account/signin/",
+              "host": ["{{base_url}}"],
+              "path": ["api","account","signin",""]
+            },
+            "description": "Saves access token to {{access_token}} collection variable automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"your_password_here\",\n  \"name\": \"John Doe\",\n  \"user_type\": \"sells\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/account/signup/",
+              "host": ["{{base_url}}"],
+              "path": ["api","account","signup",""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/account/forgot-password/",
+              "host": ["{{base_url}}"],
+              "path": ["api","account","forgot-password",""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/account/verify-otp/",
+              "host": ["{{base_url}}"],
+              "path": ["api","account","verify-otp",""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"new_password\": \"your_new_password_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/account/reset-password/",
+              "host": ["{{base_url}}"],
+              "path": ["api","account","reset-password",""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "Saler Dashboard",
+      "description": "Base path: /api/dashboard/saler/\nRole: sells / marketing",
+      "item": [
+        {
+          "name": "Campaigns",
+          "item": [
+            {
+              "name": "List Campaigns",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns",""] }
+              }, "response": []
+            },
+            {
+              "name": "Create Campaign",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('campaign_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Q2 Outbound\",\n  \"description\": \"Second quarter outbound campaign\",\n  \"status\": \"active\",\n  \"start_date\": \"2026-04-01\",\n  \"end_date\": \"2026-06-30\",\n  \"target_calls\": 500\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns",""] }
+              }, "response": []
+            },
+            {
+              "name": "Retrieve Campaign",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/{{campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns","{{campaign_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Update Campaign",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Q2 Outbound (revised)\",\n  \"description\": \"Updated description\",\n  \"status\": \"paused\",\n  \"start_date\": \"2026-04-01\",\n  \"end_date\": \"2026-06-30\",\n  \"target_calls\": 600\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/{{campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns","{{campaign_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Partial Update Campaign",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"status\": \"completed\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/{{campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns","{{campaign_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Delete Campaign",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/campaigns/{{campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","campaigns","{{campaign_id}}",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Contacts",
+          "item": [
+            {
+              "name": "List Contacts",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/contacts/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","contacts",""] }
+              }, "response": []
+            },
+            {
+              "name": "Create Contact",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('contact_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jane Smith\",\n  \"phone_number\": \"+15559876543\",\n  \"email\": \"jane@company.com\",\n  \"company\": \"Tech Corp\",\n  \"address\": \"789 Tech Ave, NY\",\n  \"notes\": \"CTO — interested in enterprise plan\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/contacts/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","contacts",""] }
+              }, "response": []
+            },
+            {
+              "name": "Retrieve Contact",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/contacts/{{contact_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","contacts","{{contact_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Update Contact",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jane Smith\",\n  \"phone_number\": \"+15550000001\",\n  \"email\": \"jane.updated@company.com\",\n  \"company\": \"Tech Corp\",\n  \"address\": \"789 Tech Ave, NY\",\n  \"notes\": \"Follow up after demo call\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/contacts/{{contact_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","contacts","{{contact_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Delete Contact",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/contacts/{{contact_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","contacts","{{contact_id}}",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Leads",
+          "item": [
+            {
+              "name": "List Leads",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/leads/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","leads",""] }
+              }, "response": []
+            },
+            {
+              "name": "Create Lead",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('lead_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"contact\": \"{{contact_id}}\",\n  \"campaign\": \"{{campaign_id}}\",\n  \"status\": \"new\",\n  \"value\": \"12000.00\",\n  \"notes\": \"Qualified via cold call\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/leads/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","leads",""] }
+              }, "response": []
+            },
+            {
+              "name": "Retrieve Lead",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/leads/{{lead_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","leads","{{lead_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Update Lead",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"contact\": \"{{contact_id}}\",\n  \"campaign\": \"{{campaign_id}}\",\n  \"status\": \"interested\",\n  \"value\": \"15000.00\",\n  \"notes\": \"Moved to interested after follow-up\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/leads/{{lead_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","leads","{{lead_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Delete Lead",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/leads/{{lead_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","leads","{{lead_id}}",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Targets",
+          "item": [
+            {
+              "name": "List Targets",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","targets",""] }
+              }, "response": []
+            },
+            {
+              "name": "Create Target",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('target_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user\": 1,\n  \"campaign\": \"{{campaign_id}}\",\n  \"target_calls\": 300,\n  \"achieved_calls\": 0,\n  \"target_revenue\": \"50000.00\",\n  \"achieved_revenue\": \"0.00\",\n  \"period_start\": \"2026-04-01\",\n  \"period_end\": \"2026-06-30\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","targets",""] }
+              }, "response": []
+            },
+            {
+              "name": "Retrieve Target",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/targets/{{target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","targets","{{target_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Update Target",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user\": 1,\n  \"campaign\": \"{{campaign_id}}\",\n  \"target_calls\": 350,\n  \"achieved_calls\": 80,\n  \"target_revenue\": \"60000.00\",\n  \"achieved_revenue\": \"18000.00\",\n  \"period_start\": \"2026-04-01\",\n  \"period_end\": \"2026-06-30\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/targets/{{target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","targets","{{target_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Delete Target",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/saler/targets/{{target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","saler","targets","{{target_id}}",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Dashboard Analytics",
+          "item": [
+            { "name": "Stats",              "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/stats/",            "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","stats",""] } }, "response": [] },
+            { "name": "Recent Calls",       "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/recent-calls/",    "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","recent-calls",""] } }, "response": [] },
+            { "name": "Campaigns",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/campaigns/",        "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","campaigns",""] } }, "response": [] },
+            { "name": "Contacts",           "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/contacts/",         "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","contacts",""] } }, "response": [] },
+            { "name": "Leads",              "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/leads/",            "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","leads",""] } }, "response": [] },
+            { "name": "Targets",            "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/targets/",          "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","targets",""] } }, "response": [] },
+            { "name": "Performance",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/performance/",      "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","performance",""] } }, "response": [] },
+            { "name": "Call Status Dist.",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/call-status/",      "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","call-status",""] } }, "response": [] },
+            { "name": "Top Agents",         "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/saler/dashboard/top-agents/",       "host": ["{{base_url}}"], "path": ["api","dashboard","saler","dashboard","top-agents",""] } }, "response": [] }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Manager Dashboard",
+      "description": "Base path: /api/dashboard/manager/\nRole: manager",
+      "item": [
+        {
+          "name": "Campaigns (Manager)",
+          "item": [
+            { "name": "List Manager Campaigns", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","campaigns",""] } }, "response": [] },
+            {
+              "name": "Create Manager Campaign",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('mgr_campaign_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{access_token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Manager Q2 Push\",\n  \"description\": \"Team-wide Q2 campaign\",\n  \"status\": \"active\",\n  \"start_date\": \"2026-04-01\",\n  \"end_date\": \"2026-06-30\",\n  \"target_calls\": 2000\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/manager/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","campaigns",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Manager Campaign", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/campaigns/{{mgr_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","campaigns","{{mgr_campaign_id}}",""] } }, "response": [] },
+            {
+              "name": "Update Manager Campaign",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Manager Q2 Push (v2)\",\n  \"description\": \"Updated team-wide plan\",\n  \"status\": \"paused\",\n  \"start_date\": \"2026-04-01\",\n  \"end_date\": \"2026-06-30\",\n  \"target_calls\": 2500\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/manager/campaigns/{{mgr_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","campaigns","{{mgr_campaign_id}}",""] }
+              }, "response": []
+            },
+            { "name": "Delete Manager Campaign", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/campaigns/{{mgr_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","campaigns","{{mgr_campaign_id}}",""] } }, "response": [] },
+            { "name": "All Campaigns (read-only)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/all-campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","all-campaigns",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Contacts (Manager)",
+          "item": [
+            { "name": "List All Contacts", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/contacts/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","contacts",""] } }, "response": [] },
+            {
+              "name": "Assign Contact to Campaign",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"campaign_id\": \"{{campaign_id}}\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/manager/contacts/{{contact_id}}/assign_campaign/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","contacts","{{contact_id}}","assign_campaign",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Leads (Manager)",
+          "item": [
+            { "name": "List All Leads",    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/leads/",            "host": ["{{base_url}}"], "path": ["api","dashboard","manager","leads",""] } }, "response": [] },
+            { "name": "Unassigned Leads",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/leads/unassigned/",  "host": ["{{base_url}}"], "path": ["api","dashboard","manager","leads","unassigned",""] } }, "response": [] },
+            {
+              "name": "Assign Lead to Agent",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"lead_id\": \"{{lead_id}}\",\n  \"assigned_to_id\": 1\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/manager/leads/assign_lead/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","leads","assign_lead",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Targets (Manager)",
+          "item": [
+            { "name": "List Manager Targets",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/targets/",      "host": ["{{base_url}}"], "path": ["api","dashboard","manager","targets",""] } }, "response": [] },
+            {
+              "name": "Create Manager Target",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('mgr_target_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"user\": 1,\n  \"campaign\": \"{{mgr_campaign_id}}\",\n  \"target_calls\": 500,\n  \"achieved_calls\": 0,\n  \"target_revenue\": \"100000.00\",\n  \"achieved_revenue\": \"0.00\",\n  \"period_start\": \"2026-04-01\",\n  \"period_end\": \"2026-06-30\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/manager/targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","targets",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Manager Target", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/targets/{{mgr_target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","targets","{{mgr_target_id}}",""] } }, "response": [] },
+            { "name": "Delete Manager Target",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/targets/{{mgr_target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","targets","{{mgr_target_id}}",""] } }, "response": [] },
+            { "name": "All Targets (read-only)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/all-targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","all-targets",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Dashboard Analytics",
+          "item": [
+            { "name": "Stats",              "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/stats/",             "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","stats",""] } }, "response": [] },
+            { "name": "Recent Calls",       "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/recent-calls/?limit=20", "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","recent-calls",""], "query": [{"key":"limit","value":"20"}] } }, "response": [] },
+            { "name": "Campaigns",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/campaigns/",          "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","campaigns",""] } }, "response": [] },
+            { "name": "Contacts",           "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/contacts/",           "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","contacts",""] } }, "response": [] },
+            { "name": "Leads",              "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/leads/",              "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","leads",""] } }, "response": [] },
+            { "name": "Targets",            "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/targets/",            "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","targets",""] } }, "response": [] },
+            { "name": "Performance",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/performance/",        "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","performance",""] } }, "response": [] },
+            { "name": "Call Status Dist.",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/call-status/",        "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","call-status",""] } }, "response": [] },
+            { "name": "Top Agents",         "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/top-agents/",         "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","top-agents",""] } }, "response": [] },
+            { "name": "Campaign Stats",     "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/campaign-stats/",     "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","campaign-stats",""] } }, "response": [] },
+            { "name": "Agents",             "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/agents/",             "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","agents",""] } }, "response": [] },
+            { "name": "Lead Status Dist.",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/lead-status/",        "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","lead-status",""] } }, "response": [] },
+            { "name": "Daily Performance",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/manager/dashboard/daily-performance/",  "host": ["{{base_url}}"], "path": ["api","dashboard","manager","dashboard","daily-performance",""] } }, "response": [] }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Admin Dashboard",
+      "description": "Base path: /api/dashboard/admin/\nRole: admin / super_admin",
+      "item": [
+        {
+          "name": "Campaigns (Admin)",
+          "item": [
+            { "name": "List Admin Campaigns",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","campaigns",""] } }, "response": [] },
+            {
+              "name": "Create Admin Campaign",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('adm_campaign_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Global Outreach 2026\",\n  \"description\": \"Company-wide global campaign\",\n  \"status\": \"active\",\n  \"start_date\": \"2026-01-01\",\n  \"end_date\": \"2026-12-31\",\n  \"target_calls\": 10000,\n  \"priority\": 1,\n  \"is_global\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","campaigns",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Admin Campaign", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/campaigns/{{adm_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","campaigns","{{adm_campaign_id}}",""] } }, "response": [] },
+            {
+              "name": "Update Admin Campaign",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Global Outreach 2026 v2\",\n  \"description\": \"Revised global campaign\",\n  \"status\": \"paused\",\n  \"start_date\": \"2026-01-01\",\n  \"end_date\": \"2026-12-31\",\n  \"target_calls\": 12000,\n  \"priority\": 1,\n  \"is_global\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/campaigns/{{adm_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","campaigns","{{adm_campaign_id}}",""] }
+              }, "response": []
+            },
+            { "name": "Delete Admin Campaign",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/campaigns/{{adm_campaign_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","campaigns","{{adm_campaign_id}}",""] } }, "response": [] },
+            { "name": "All Campaigns (read-only)","request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/all-campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-campaigns",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Targets (Admin)",
+          "item": [
+            { "name": "List Admin Targets",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","targets",""] } }, "response": [] },
+            {
+              "name": "Create Admin Target",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('adm_target_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"user\": 1,\n  \"campaign\": \"{{adm_campaign_id}}\",\n  \"target_calls\": 1000,\n  \"achieved_calls\": 0,\n  \"target_revenue\": \"200000.00\",\n  \"achieved_revenue\": \"0.00\",\n  \"period_start\": \"2026-01-01\",\n  \"period_end\": \"2026-03-31\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","targets",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Admin Target", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/targets/{{adm_target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","targets","{{adm_target_id}}",""] } }, "response": [] },
+            { "name": "Delete Admin Target",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/targets/{{adm_target_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","targets","{{adm_target_id}}",""] } }, "response": [] },
+            { "name": "All Targets (read-only)","request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/all-targets/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-targets",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "System Settings",
+          "item": [
+            { "name": "List Settings",   "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/settings/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","settings",""] } }, "response": [] },
+            {
+              "name": "Create Setting",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('setting_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"key\": \"max_call_duration\",\n  \"value\": \"3600\",\n  \"description\": \"Maximum allowed call duration in seconds\",\n  \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/settings/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","settings",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Setting", "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/settings/{{setting_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","settings","{{setting_id}}",""] } }, "response": [] },
+            {
+              "name": "Update Setting",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"key\": \"max_call_duration\",\n  \"value\": \"7200\",\n  \"description\": \"Updated max call duration — 2 hours\",\n  \"is_active\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/settings/{{setting_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","settings","{{setting_id}}",""] }
+              }, "response": []
+            },
+            { "name": "Delete Setting",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/settings/{{setting_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","settings","{{setting_id}}",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Audit Logs",
+          "item": [
+            { "name": "List All Audit Logs",            "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/audit-logs/",                                          "host": ["{{base_url}}"], "path": ["api","dashboard","admin","audit-logs",""] } }, "response": [] },
+            { "name": "Filter by User",                 "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/audit-logs/?user_id=1",                                  "host": ["{{base_url}}"], "path": ["api","dashboard","admin","audit-logs",""], "query": [{"key":"user_id","value":"1"}] } }, "response": [] },
+            { "name": "Filter by Action",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/audit-logs/?action=create",                               "host": ["{{base_url}}"], "path": ["api","dashboard","admin","audit-logs",""], "query": [{"key":"action","value":"create"}] } }, "response": [] },
+            { "name": "Filter by Date Range",           "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/audit-logs/?start_date=2026-03-01&end_date=2026-03-31",   "host": ["{{base_url}}"], "path": ["api","dashboard","admin","audit-logs",""], "query": [{"key":"start_date","value":"2026-03-01"},{"key":"end_date","value":"2026-03-31"}] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "All Data (read-only)",
+          "item": [
+            { "name": "All Contacts", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/all-contacts/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-contacts",""] } }, "response": [] },
+            { "name": "All Leads",    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/all-leads/",    "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-leads",""] } }, "response": [] },
+            { "name": "Unassigned Leads", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/all-leads/unassigned/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-leads","unassigned",""] } }, "response": [] },
+            {
+              "name": "Assign Lead",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"lead_id\": \"{{lead_id}}\",\n  \"assigned_to_id\": 1\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/all-leads/assign_lead/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-leads","assign_lead",""] }
+              }, "response": []
+            },
+            {
+              "name": "Bulk Action on Leads",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"action\": \"update_status\",\n  \"object_ids\": [\"{{lead_id}}\"],\n  \"data\": { \"status\": \"converted\" }\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/admin/all-leads/bulk_action/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","all-leads","bulk_action",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "User Management",
+          "item": [
+            { "name": "List Users (router)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/users/",          "host": ["{{base_url}}"], "path": ["api","dashboard","admin","users",""] } }, "response": [] },
+            { "name": "List Users",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/users/list/",     "host": ["{{base_url}}"], "path": ["api","dashboard","admin","users","list",""] } }, "response": [] },
+            { "name": "List Agents",         "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/users/agents/",   "host": ["{{base_url}}"], "path": ["api","dashboard","admin","users","agents",""] } }, "response": [] },
+            { "name": "List Managers",       "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/users/managers/", "host": ["{{base_url}}"], "path": ["api","dashboard","admin","users","managers",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Dashboard Analytics",
+          "item": [
+            { "name": "Stats",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/stats/",                     "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","stats",""] } }, "response": [] },
+            { "name": "Recent Calls",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/recent-calls/",              "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","recent-calls",""] } }, "response": [] },
+            { "name": "Campaigns",           "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/campaigns/",                 "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","campaigns",""] } }, "response": [] },
+            { "name": "Contacts",            "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/contacts/",                  "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","contacts",""] } }, "response": [] },
+            { "name": "Leads",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/leads/",                     "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","leads",""] } }, "response": [] },
+            { "name": "Targets",             "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/targets/",                   "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","targets",""] } }, "response": [] },
+            { "name": "Performance",         "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/performance/",               "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","performance",""] } }, "response": [] },
+            { "name": "Call Status Dist.",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/call-status-distribution/",  "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","call-status-distribution",""] } }, "response": [] },
+            { "name": "Top Agents",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/top-agents/",                "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","top-agents",""] } }, "response": [] },
+            { "name": "Campaign Stats",      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/campaign-stats/",            "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","campaign-stats",""] } }, "response": [] },
+            { "name": "Users",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/users/",                     "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","users",""] } }, "response": [] },
+            { "name": "Lead Status Dist.",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/lead-status-distribution/",  "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","lead-status-distribution",""] } }, "response": [] },
+            { "name": "Daily Performance",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/admin/dashboard/daily-performance/",         "host": ["{{base_url}}"], "path": ["api","dashboard","admin","dashboard","daily-performance",""] } }, "response": [] }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Auditor Dashboard",
+      "description": "Base path: /api/dashboard/auditor/\nRole: auditor",
+      "item": [
+        {
+          "name": "Settings",
+          "item": [
+            { "name": "List Settings",     "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/settings/",              "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","settings",""] } }, "response": [] },
+            { "name": "My Settings",       "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/settings/my_settings/",   "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","settings","my_settings",""] } }, "response": [] },
+            {
+              "name": "Create Settings",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('aud_setting_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"default_page_size\": 20,\n  \"show_transcripts\": true,\n  \"show_reports\": true,\n  \"email_notifications\": false,\n  \"notification_email\": \"\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/auditor/settings/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","settings",""] }
+              }, "response": []
+            },
+            {
+              "name": "Update Settings (partial)",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"default_page_size\": 50,\n  \"show_transcripts\": true,\n  \"show_reports\": true,\n  \"email_notifications\": true,\n  \"notification_email\": \"auditor@company.com\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/auditor/settings/update_settings/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","settings","update_settings",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Filter Presets",
+          "item": [
+            { "name": "List Presets",   "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/filter-presets/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","filter-presets",""] } }, "response": [] },
+            {
+              "name": "Create Preset",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('preset_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Completed Calls This Week\",\n  \"filter_data\": {\n    \"status\": \"completed\",\n    \"start_date\": \"2026-03-09\",\n    \"end_date\": \"2026-03-15\"\n  },\n  \"is_default\": true\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/auditor/filter-presets/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","filter-presets",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Preset", "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/filter-presets/{{preset_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","filter-presets","{{preset_id}}",""] } }, "response": [] },
+            { "name": "Delete Preset",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/filter-presets/{{preset_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","filter-presets","{{preset_id}}",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Bookmarks",
+          "item": [
+            { "name": "List Bookmarks",   "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/bookmarks/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","bookmarks",""] } }, "response": [] },
+            {
+              "name": "Create Bookmark",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('bookmark_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"call_id\": 1,\n  \"note\": \"Excellent call quality — review for training\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/auditor/bookmarks/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","bookmarks",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Bookmark", "request": { "method": "GET",    "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/bookmarks/{{bookmark_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","bookmarks","{{bookmark_id}}",""] } }, "response": [] },
+            { "name": "Delete Bookmark",   "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/bookmarks/{{bookmark_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","bookmarks","{{bookmark_id}}",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Call History",
+          "item": [
+            { "name": "List Calls",                    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/",                                  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""] } }, "response": [] },
+            { "name": "Filter by Status",              "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?status=completed",                   "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"status","value":"completed"}] } }, "response": [] },
+            { "name": "Filter by Agent",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?user_id=1",                           "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"user_id","value":"1"}] } }, "response": [] },
+            { "name": "Filter by Date Range",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?start_date=2026-03-01&end_date=2026-03-31", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"start_date","value":"2026-03-01"},{"key":"end_date","value":"2026-03-31"}] } }, "response": [] },
+            { "name": "Filter by Phone",               "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?phone=+1555",                         "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"phone","value":"+1555"}] } }, "response": [] },
+            { "name": "Filter Calls with Transcripts", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?has_transcript=true",                  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"has_transcript","value":"true"}] } }, "response": [] },
+            { "name": "Filter Calls with Reports",     "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?has_report=true",                      "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"has_report","value":"true"}] } }, "response": [] },
+            { "name": "Search Calls",                  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/?search=john",                          "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls",""], "query": [{"key":"search","value":"john"}] } }, "response": [] },
+            { "name": "Call Detail (transcripts+report)","request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/{{call_id}}/detail/",                  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls","{{call_id}}","detail",""] } }, "response": [] },
+            { "name": "Export Calls",                  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/calls/export/",                               "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","calls","export",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Campaigns, Contacts, Leads (read-only)",
+          "item": [
+            { "name": "List Campaigns", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/campaigns/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","campaigns",""] } }, "response": [] },
+            { "name": "List Contacts",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/contacts/",  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","contacts",""] } }, "response": [] },
+            { "name": "List Leads",     "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/leads/",     "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","leads",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Dashboard Analytics",
+          "item": [
+            { "name": "Overview",      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/dashboard/overview/",      "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","dashboard","overview",""] } }, "response": [] },
+            { "name": "Recent Calls",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/dashboard/recent-calls/",  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","dashboard","recent-calls",""] } }, "response": [] },
+            { "name": "Top Agents",    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/dashboard/top-agents/",    "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","dashboard","top-agents",""] } }, "response": [] }
+          ]
+        },
+        {
+          "name": "Reports",
+          "item": [
+            { "name": "Stats",                "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/stats/",                  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","stats",""] } }, "response": [] },
+            { "name": "Daily Stats",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/daily/",                  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","daily",""] } }, "response": [] },
+            { "name": "Weekly Stats",         "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/weekly/",                 "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","weekly",""] } }, "response": [] },
+            { "name": "Monthly Stats",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/monthly/",                "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","monthly",""] } }, "response": [] },
+            { "name": "Call Status Dist.",    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/call-status/",            "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","call-status",""] } }, "response": [] },
+            { "name": "Agent Performance",    "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/agent-performance/",     "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","agent-performance",""] } }, "response": [] },
+            { "name": "Campaign Performance", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/campaign-performance/",  "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","campaign-performance",""] } }, "response": [] },
+            { "name": "Duration Distribution","request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/auditor/reports/duration-distribution/", "host": ["{{base_url}}"], "path": ["api","dashboard","auditor","reports","duration-distribution",""] } }, "response": [] }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Support Dashboard",
+      "description": "Base path: /api/dashboard/support/\nRole: support (or admin/manager)",
+      "item": [
+        {
+          "name": "Support Tickets",
+          "item": [
+            {
+              "name": "List Tickets",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets",""] }
+              }, "response": []
+            },
+            { "name": "Filter by Status",   "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/?status=open",     "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets",""], "query": [{"key":"status","value":"open"}] } }, "response": [] },
+            { "name": "Filter by Priority", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/?priority=urgent", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets",""], "query": [{"key":"priority","value":"urgent"}] } }, "response": [] },
+            { "name": "Search Tickets",     "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/?search=billing", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets",""], "query": [{"key":"search","value":"billing"}] } }, "response": [] },
+            {
+              "name": "Create Ticket",
+              "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json(); if (d && d.id) pm.collectionVariables.set('ticket_id', d.id);"] } }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subject\": \"Call not connecting\",\n  \"description\": \"Customer reports that calls are dropping after 10 seconds\",\n  \"priority\": \"high\",\n  \"customer_name\": \"Alice Brown\",\n  \"customer_phone\": \"+15550001234\",\n  \"customer_email\": \"alice@client.com\",\n  \"related_call_id\": \"\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets",""] }
+              }, "response": []
+            },
+            { "name": "Retrieve Ticket",  "request": { "method": "GET",  "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}",""] } }, "response": [] },
+            {
+              "name": "Update Ticket",
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subject\": \"Call not connecting\",\n  \"description\": \"Customer reports that calls are dropping after 10 seconds\",\n  \"status\": \"in_progress\",\n  \"priority\": \"urgent\",\n  \"customer_name\": \"Alice Brown\",\n  \"customer_phone\": \"+15550001234\",\n  \"customer_email\": \"alice@client.com\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}",""] }
+              }, "response": []
+            },
+            {
+              "name": "Partial Update Ticket",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"status\": \"resolved\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}",""] }
+              }, "response": []
+            },
+            { "name": "Delete Ticket",    "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}",""] } }, "response": [] },
+            {
+              "name": "Add Comment to Ticket",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"comment\": \"Spoke with customer — escalating to Level 2\",\n  \"is_internal\": false\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/add_comment/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}","add_comment",""] }
+              }, "response": []
+            },
+            {
+              "name": "Assign Ticket to User",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/assign/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}","assign",""] }
+              }, "response": []
+            },
+            {
+              "name": "Resolve Ticket",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"resolution_notes\": \"Issue resolved by restarting the Twilio integration. Customer confirmed calls are working.\"\n}" },
+                "url": { "raw": "{{base_url}}/api/dashboard/support/tickets/{{ticket_id}}/resolve/", "host": ["{{base_url}}"], "path": ["api","dashboard","support","tickets","{{ticket_id}}","resolve",""] }
+              }, "response": []
+            }
+          ]
+        },
+        {
+          "name": "Call Logs (read-only)",
+          "item": [
+            { "name": "List Call Logs",          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/call-logs/",              "host": ["{{base_url}}"], "path": ["api","dashboard","support","call-logs",""] } }, "response": [] },
+            { "name": "Filter by Status",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/call-logs/?status=failed", "host": ["{{base_url}}"], "path": ["api","dashboard","support","call-logs",""], "query": [{"key":"status","value":"failed"}] } }, "response": [] },
+            { "name": "Filter by Agent (user)",  "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/call-logs/?user=1",        "host": ["{{base_url}}"], "path": ["api","dashboard","support","call-logs",""], "query": [{"key":"user","value":"1"}] } }, "response": [] },
+            { "name": "Search Call Logs",        "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/call-logs/?search=+1555",  "host": ["{{base_url}}"], "path": ["api","dashboard","support","call-logs",""], "query": [{"key":"search","value":"+1555"}] } }, "response": [] },
+            { "name": "Retrieve Call Log",       "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }], "url": { "raw": "{{base_url}}/api/dashboard/support/call-logs/{{call_id}}/",   "host": ["{{base_url}}"], "path": ["api","dashboard","support","call-logs","{{call_id}}",""] } }, "response": [] }
+          ]
+        }
+      ]
+    }
+
+  ]
+}
