@@ -7,6 +7,9 @@ import websockets
 from pydub import AudioSegment
 from groq import Groq
 import os
+from datetime import datetime
+from apps.calling.models import Call, CallTranscript, CallReport, AIResponse
+from asgiref.sync import sync_to_async
 
 # ============================
 # GLOBAL TIMING VARIABLES
@@ -17,26 +20,21 @@ LLM_START_TIME = None
 FIRST_TOKEN_TIME = None
 LAST_TOKEN_TIME = None
 chat_history = []
+current_call = None
 CALL_START_TIME = None
 CALL_END_TIME = None
-reply_for_caller = ""
+reply_for_seller = ""
 
 # LLM CLIENT (Groq)
-groq_client = Groq(api_key=os.environ['GROQ_API_KEY'])
+groq_client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
 
 def generate_comprehensive_report(speech_list, CALL_START_TIME, CALL_END_TIME):
     total_duration = get_time(CALL_START_TIME, CALL_END_TIME)
     prompt_stats = calculate_prompt_utilization(speech_list)
     avg_response_time = calculate_average_response_time(speech_list)
+    
     prompt = f"""
-You are a professional sales coach analyzing an caller's call performance. Generate a comprehensive coaching report.
-
-**CRITICAL RULES:**
-- Analyze ONLY the caller's behavior, speech, and actions
-- Do NOT analyze or infer the callee's emotions, intentions, or reactions
-- Use phrases like "You slowed your pacing after early hesitation" (NOT "The lead seemed hesitant")
-- All timestamps should reference caller actions only
-- No assumptions about the other party's state
+You are a professional sales coach analyzing a seller's call performance. Generate a comprehensive coaching report in JSON format.
 
 **CALL DATA:**
 Duration: {total_duration} (mm:ss)
@@ -47,166 +45,12 @@ Off-Script: {prompt_stats['off_script_percentage']}%
 Transcript:
 {chat_history}
 
-**REQUIRED OUTPUT (JSON):**
-{{
-  "call_summary": {{
-    "agent_centric_overview": "5-8 sentence summary of agent's actions during call without transcripts",
-    "call_overview": [
-      "Bullet point 1: High-level behavior summary",
-      "Bullet point 2: Strategy and objection navigation", 
-      "Bullet point 3: Closing effort assessment"
-    ]
-  }},
-  
-  "key_moments_log": [
-    {{
-      "timestamp": "MM:SS",
-      "action": "Agent action description",
-      "significance": "Why this was important",
-      "reference": "Psychological principle or statistic"
-    }}
-  ],
-  
-  "performance_metrics": {{
-    "call_duration": {{
-        "total_duration": "{total_duration}",
-    }},
-    "response_timing": {{
-      "average_response_time_seconds": {avg_response_time},
-      "pacing_analysis": "2-3 sentence analysis of pacing and adaptability based on the {avg_response_time}s average response time. Explain if this is optimal (1-3s is ideal), too fast (<1s), or needs improvement (>5s)."
-    }},
-    "prompt_utilization": {{
-      "used_as_is_percentage": {prompt_stats['used_as_is_percentage']},
-      "off_script_percentage": {prompt_stats['off_script_percentage']},
-      "coaching_insights": "Analyze the {prompt_stats['used_as_is_percentage']}% AI usage rate. Optimal range is 40-70%. Explain if agent relied too heavily on prompts (>80%), showed good balance (40-70%), or went too off-script (<30%). Discuss natural delivery effectiveness."
-    }}
-  }},
-  
-  "conversion_indicators": {{
-    "call_status": {{
-      "status": "Success/In Progress/Needs Revisit",
-      "reasoning": "2-4 sentence explanation based on agent behaviors and the performance score out of 100"
-    }},
-    "follow_up_suggestion": "Next step recommendation based on behavioral patterns"
-  }},
-  
-  "tone_delivery_feedback": {{
-    "tone_alignment": {{
-      "evaluation": "2-3 sentence evaluation with timestamps",
-      "key_moments": [
-        {{"timestamp": "MM:SS", "tone_quality": "description"}}
-      ]
-    }},
-    "energy_profile": {{
-      "classification": "Low/Neutral/High",
-      "reasoning": "2-3 sentence reasoning with timestamps and reference to {avg_response_time}s response time",
-      "momentum_insights": "How pacing supported conversation",
-      "reference": "Psychological principle or case study"
-    }}
-  }},
-  
-  "sentiment_responsiveness": {{
-    "sentiment_signal": {{
-      "score": "+1 to -1 scale",
-      "explanation": "The sentiment score of is calculated from -1.0 (very negative language patterns) to +1.0 (very positive language patterns). Scores above 0.3 indicate strong positive engagement, 0.0 to 0.3 is neutral/professional, -0.3 to 0.0 shows some hesitation, and below -0.3 indicates concerning negativity. Explain what this score means for this agent's performance.",
-      "timestamped_moments": [
-        {{"timestamp": "MM:SS", "observation": "1-2 sentence explanation of sentiment at this moment"}}
-      ]
-    }},
-    "adaptability_moments": [
-      {{
-        "timestamp": "MM:SS",
-        "category": "tone/pacing/strategy",
-        "description": "1-2 sentence reasoning",
-        "reference": "Psychological principle"
-      }}
-    ],
-    "coaching_tags": [
-      {{
-        "tag": "reassuring/assertive/empathetic/hesitant",
-        "timestamp": "MM:SS",
-        "reasoning": "1-3 sentence explanation"
-      }}
-    ]
-  }},
-  
-  "behavioral_coaching": {{
-    "supportive_language_use": [
-      {{
-        "timestamp": "MM:SS",
-        "example": "Specific phrasing used",
-        "analysis": "How it supports potential hesitation/clarity needs"
-      }}
-    ],
-    "conversational_flexibility": "2-3 sentence evaluation of adaptation. Reference the {prompt_stats['off_script_percentage']}% off-script rate.",
-    "trust_oriented_behaviors": [
-      {{
-        "behavior": "Description",
-        "example": "Specific instance with timestamp",
-        "reasoning": "2-3 sentences",
-        "reference": "Psychological principle",
-        "reference_url": "URL if applicable"
-      }}
-    ]
-  }},
-  
-  "coaching_summary": {{
-    "performance_score": out of 100,
-    "score_breakdown": "Explain the score. It's calculated from: AI prompt usage (30%), response timing (20%), call engagement (25%), and call duration appropriateness (25%). Scores 80+ are excellent, 60-79 good, 40-59 needs improvement, below 40 requires coaching.",
-    "improvement_areas": [
-      {{
-        "area": "Specific guidance area",
-        "description": "2-3 sentence explanation",
-        "timestamped_example": "MM:SS - specific suggestion"
-      }}
-    ],
-    "ai_coaching_highlights": [
-      "Positive/constructive note 1 with reasoning",
-      "Positive/constructive note 2 with reasoning",
-      "Positive/constructive note 3 with reasoning"
-    ]
-  }},
-  
-  "defining_moments": {{
-    "prompt_usage": [
-      {{
-        "timestamp": "MM:SS",
-        "description": "1-2 sentences on how/why/when agent used or deviated from AI prompts",
-        "effectiveness": "evaluation"
-      }}
-    ],
-    "objection_navigation": [
-      {{
-        "timestamp": "MM:SS",
-        "description": "1-2 sentences on how/why/when",
-        "effectiveness": "evaluation"
-      }}
-    ],
-    "rapport_building": [
-      {{
-        "timestamp": "MM:SS",
-        "description": "1-2 sentences on how/why/when",
-        "effectiveness": "evaluation"
-      }}
-    ],
-    "ctas": [
-      {{
-        "timestamp": "MM:SS",
-        "type": "issued/missed",
-        "description": "1-2 sentences on how/why/when",
-        "effectiveness": "evaluation"
-      }}
-    ]
-  }}
-}}
-
-Generate a comprehensive JSON analysis of the call.
+Generate a comprehensive JSON analysis with performance_score and call_status fields.
 """
+    
     completion = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.8,
     )
     return completion.choices[0].message.content
@@ -221,7 +65,7 @@ def get_time(start_time, end_time):
 
 def calculate_prompt_utilization(speech_list):
     """Calculate AI prompt utilization metrics from speech list."""
-    agent_speeches = [s for s in speech_list if s.get("role") == "caller" and s.get("ai_used_percentage") is not None]
+    agent_speeches = [s for s in speech_list if s.get("role") == "seller" and s.get("ai_used_percentage") is not None]
     
     if not agent_speeches:
         return {
@@ -242,9 +86,11 @@ def calculate_prompt_utilization(speech_list):
 
 def parse_timestamp(ts):
     """Convert 'MM:SS' to seconds."""
-    minutes, seconds = map(int, ts.split(":"))
-    return minutes * 60 + seconds
-
+    try:
+        minutes, seconds = map(int, ts.split(":"))
+        return minutes * 60 + seconds
+    except:
+        return 0
 
 def calculate_average_response_time(speech_list):
     response_times = []
@@ -253,11 +99,11 @@ def calculate_average_response_time(speech_list):
         current = speech_list[i]
         next_speech = speech_list[i + 1]
 
-        if current["role"] == "caller" and next_speech["role"] == "callee":
-            caller_time = parse_timestamp(current["timestamp"])
-            callee_time = parse_timestamp(next_speech["timestamp"])
+        if current["role"] == "seller" and next_speech["role"] == "customer":
+            seller_time = parse_timestamp(current["timestamp"])
+            customer_time = parse_timestamp(next_speech["timestamp"])
             
-            diff = callee_time - caller_time
+            diff = customer_time - seller_time
             if diff >= 0:
                 response_times.append(diff)
 
@@ -268,6 +114,8 @@ def calculate_average_response_time(speech_list):
 def get_current_timestamp():
     global CALL_START_TIME
     """Get current time in mm:ss format from conversation start"""
+    if not CALL_START_TIME:
+        return "00:00"
     elapsed = time.time() - CALL_START_TIME
     minutes = int(elapsed // 60)
     seconds = int(elapsed % 60)
@@ -287,7 +135,7 @@ async def generate_llm_response(user_text):
     completion = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
-            {"role": "system", "content": f"You are a PitchProx. PitchProx is a system that helps the caller by suggesting responses based on callee's words. Context: {context}. Give me only one response"},
+            {"role": "system", "content": f"You are a PitchProx. PitchProx is a system that helps the seller by suggesting responses based on customer's words. Context: {context}. Give me only one response"},
             {"role": "user", "content": user_text}
         ],
         temperature=0.8,
@@ -328,7 +176,7 @@ async def generate_llm_response(user_text):
 
 def deepgram_connect():
     extra_headers = {
-        'Authorization': 'Token f14c89d16e1e8a6fa7e3f5e355caa5baa4c8b510'
+        'Authorization': f"Token {os.environ.get('DEEPGRAM_API_KEY', '')}"
     }
     deepgram_ws = websockets.connect(
         "wss://api.deepgram.com/v1/listen?encoding=mulaw&sample_rate=8000&channels=2&multichannel=true",
@@ -337,8 +185,24 @@ def deepgram_connect():
     return deepgram_ws
 
 
-async def proxy(client_ws, broadcast_callback=None):
-    global reply_for_caller
+async def proxy(client_ws, broadcast_callback=None, call_id=None):
+    global reply_for_seller, current_call, chat_history, CALL_START_TIME, CALL_END_TIME
+    
+    # Reset global variables for new call
+    chat_history = []
+    CALL_START_TIME = None
+    CALL_END_TIME = None
+    reply_for_seller = ""
+
+    if call_id:
+        try:
+            current_call = await sync_to_async(Call.objects.get)(id=call_id)
+            print(f"Loaded call record: {current_call.id}")
+        except Exception as e:
+            print(f"Error loading call: {e}")
+            current_call = None
+    else:
+        current_call = None
 
     outbox = asyncio.Queue()
     print('started proxy')
@@ -357,7 +221,7 @@ async def proxy(client_ws, broadcast_callback=None):
             print('finished deepgram sender')
 
         async def deepgram_receiver(deepgram_ws):
-            global TRANSCRIPT_RECEIVED_TIME, AUDIO_SENT_TIME, reply_for_caller
+            global TRANSCRIPT_RECEIVED_TIME, AUDIO_SENT_TIME, reply_for_seller
 
             print('started deepgram receiver')
 
@@ -376,60 +240,91 @@ async def proxy(client_ws, broadcast_callback=None):
                             if AUDIO_SENT_TIME:
                                 deepgram_latency = TRANSCRIPT_RECEIVED_TIME - AUDIO_SENT_TIME
                             
-                            if channel_index == [0, 2]:
-                                print(f"\n[CALLER]: {transcript}")
-                                similarity = difflib.SequenceMatcher(None, reply_for_caller, transcript).ratio()
-                                chat_history.append({"role": "caller", "content": transcript, "timestamp": current_time, "ai_used_percentage":similarity})
+                            if channel_index == [0, 2]:  # Seller speaking
+                                print(f"\n[SELLER]: {transcript}")
+                                similarity = difflib.SequenceMatcher(None, reply_for_seller, transcript).ratio()
+                                chat_history.append({
+                                    "role": "seller",
+                                    "content": transcript,
+                                    "timestamp": current_time,
+                                    "ai_used_percentage": similarity
+                                })
+                                
+                                if current_call:
+                                    await sync_to_async(CallTranscript.objects.create)(
+                                        call=current_call,
+                                        role='caller',  # Maps to seller in DB
+                                        content=transcript,
+                                        timestamp=current_time,
+                                        ai_used_percentage=similarity
+                                    )
+                                    current_call.status = 'in_progress'
+                                    await sync_to_async(current_call.save)()
+                                
                                 if AUDIO_SENT_TIME:
                                     print(f"[Deepgram Latency: {deepgram_latency:.3f}s]")
                                 
                                 msg = {
                                     "type": "transcript",
-                                    "role": "caller",
+                                    "role": "seller",
                                     "content": transcript,
                                     "timestamp": current_time,
                                     "ai_used_percentage": similarity
                                 }
                                 
-                                # Send to Twilio WebSocket
                                 await client_ws.send_text(json.dumps(msg))
                                 
-                                # Broadcast to monitors
                                 if broadcast_callback:
                                     await broadcast_callback(msg)
                                     
-                            elif channel_index == [1, 2]:
-                                print(f"\n[CALLEE]: {transcript}")
+                            elif channel_index == [1, 2]:  # Customer speaking
+                                print(f"\n[CUSTOMER]: {transcript}")
                                 if AUDIO_SENT_TIME:
                                     print(f"[Deepgram Latency: {deepgram_latency:.3f}s]")
                                 
-                                reply_for_caller = await generate_llm_response(transcript)
-                                chat_history.append({"role": "callee", "content": transcript, "timestamp": current_time})
+                                reply_for_seller = await generate_llm_response(transcript)
+                                chat_history.append({
+                                    "role": "customer",
+                                    "content": transcript,
+                                    "timestamp": current_time
+                                })
+                                
+                                if current_call:
+                                    transcript_obj = await sync_to_async(CallTranscript.objects.create)(
+                                        call=current_call,
+                                        role='callee',  # Maps to customer in DB
+                                        content=transcript,
+                                        timestamp=current_time
+                                    )
+                                    await sync_to_async(AIResponse.objects.create)(
+                                        call=current_call,
+                                        transcript=transcript_obj,
+                                        suggestion=reply_for_seller,
+                                        timestamp=current_time
+                                    )
                                 
                                 transcript_msg = {
                                     "type": "transcript",
-                                    "role": "callee",
+                                    "role": "customer",
                                     "content": transcript,
                                     "timestamp": current_time
                                 }
                                 
                                 suggestion_msg = {
                                     "type": "suggestion",
-                                    "content": reply_for_caller,
+                                    "content": reply_for_seller,
                                     "timestamp": current_time
                                 }
                                 
-                                # Send to Twilio WebSocket
                                 await client_ws.send_text(json.dumps(transcript_msg))
                                 await client_ws.send_text(json.dumps(suggestion_msg))
                                 
-                                # Broadcast to monitors
                                 if broadcast_callback:
                                     await broadcast_callback(transcript_msg)
                                     await broadcast_callback(suggestion_msg)
 
-                    except:
-                        print('was not able to parse deepgram response as json')
+                    except Exception as e:
+                        print(f'Error parsing deepgram response: {e}')
                         continue
                         
             except websockets.exceptions.ConnectionClosedError as e:
@@ -461,6 +356,9 @@ async def proxy(client_ws, broadcast_callback=None):
 
                         if data["event"] in ("connected", "start"):
                             CALL_START_TIME = time.time()
+                            if current_call:
+                                current_call.started_at = datetime.fromtimestamp(CALL_START_TIME)
+                                await sync_to_async(current_call.save)()
                             print("Media WS: Received event connected or start")
                             continue
 
@@ -500,9 +398,43 @@ async def proxy(client_ws, broadcast_callback=None):
                             CALL_END_TIME = time.time()
                             print("Media WS: Received event stop")
                             print(chat_history)
+                            
                             summary = generate_comprehensive_report(chat_history, CALL_START_TIME, CALL_END_TIME)
                             print("\n=== Comprehensive Call Analysis ===")
                             print(summary)
+                            
+                            if current_call:
+                                try:
+                                    # Parse JSON response
+                                    summary_dict = json.loads(summary) if isinstance(summary, str) else summary
+                                    
+                                    # Extract fields
+                                    performance_score = summary_dict.get('coaching_summary', {}).get('performance_score')
+                                    call_status = summary_dict.get('conversion_indicators', {}).get('call_status', {}).get('status', 'completed')
+                                    
+                                    # Save report
+                                    await sync_to_async(CallReport.objects.create)(
+                                        call=current_call,
+                                        report_data=summary_dict,  # Save as dict
+                                        performance_score=performance_score,
+                                        call_status=call_status
+                                    )
+                                    
+                                    # Update call
+                                    current_call.ended_at = datetime.fromtimestamp(CALL_END_TIME)
+                                    current_call.duration_seconds = int(CALL_END_TIME - CALL_START_TIME)
+                                    current_call.status = 'completed'
+                                    await sync_to_async(current_call.save)()
+                                    
+                                except json.JSONDecodeError:
+                                    print("Warning: Could not parse summary as JSON")
+                                    await sync_to_async(CallReport.objects.create)(
+                                        call=current_call,
+                                        report_data={"raw_summary": summary},
+                                        call_status='completed'
+                                    )
+                                except Exception as e:
+                                    print(f"Error saving call report: {e}")
                             
                             summary_msg = {
                                 "type": "call_summary",
@@ -510,10 +442,8 @@ async def proxy(client_ws, broadcast_callback=None):
                                 "chat_history": chat_history
                             }
                             
-                            # Send to Twilio WebSocket
                             await client_ws.send_text(json.dumps(summary_msg))
                             
-                            # Broadcast to monitors
                             if broadcast_callback:
                                 await broadcast_callback(summary_msg)
                             
@@ -531,8 +461,8 @@ async def proxy(client_ws, broadcast_callback=None):
                             inbuffer = inbuffer[BUFFER_SIZE:]
                             outbuffer = outbuffer[BUFFER_SIZE:]
 
-                    except:
-                        print('message from client not formatted correctly')
+                    except Exception as e:
+                        print(f'Error processing client message: {e}')
                         continue
                         
             except Exception as e:
@@ -547,5 +477,8 @@ async def proxy(client_ws, broadcast_callback=None):
             client_receiver(client_ws)
         )
 
-        await client_ws.close()
+        try:
+            await client_ws.close()
+        except RuntimeError:
+            pass
         print('finished running the proxy')

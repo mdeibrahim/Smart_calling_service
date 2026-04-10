@@ -1,19 +1,23 @@
 import os
 from pathlib import Path
-from decouple import config
 from datetime import timedelta
+from dotenv import load_dotenv
 from .conf import database
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
+
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-24f5e@!)uckgq3vqckh&zo2$m8v$bx)4d8=_*de5xg26*hksmk'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-24f5e@!)uckgq3vqckh&zo2$m8v$bx)4d8=_*de5xg26*hksmk')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = ["*"]
 
 
@@ -29,15 +33,21 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
+    "django_filters",
     "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
+    "rest_framework_simplejwt.token_blacklist",  # temporarily disabled
     "channels",  # Django Channels
     # 'django_celery_beat',
     # 'django_celery_results',
     # lcoal
-    # "apps.account",
+    "apps.account",
     # "apps.sales",
     "apps.calling",
+    "apps.dashboard.saler_dashboard",
+    "apps.dashboard.manager_dashboard",
+    "apps.dashboard.admin_dashboard",
+    "apps.dashboard.auditor_dashboard",
+    "apps.dashboard.support_dashboard",
 ]
 
 MIDDLEWARE = [
@@ -157,23 +167,26 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "project.renderers.StandardResponseRenderer",
+    ],
     # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "project.custom_exception.custom_exception_handler",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=60),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,  # disabled for now
+    "BLACKLIST_AFTER_ROTATION": True,  # disabled for now
     "UPDATE_LAST_LOGIN": True,
 }
 
 # Custom User Model
-# AUTH_USER_MODEL = "account.User"
+AUTH_USER_MODEL = "account.User"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # keep default backend
+    "apps.account.backends.EmailBackend",  # custom email backend
 ]
 
 
@@ -184,14 +197,14 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "support@pitchprox.com"
-EMAIL_HOST_PASSWORD = "cB08fGPVAk3W"
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-ZOHO_CLIENT_ID = "1000.T40P931TRIA5M3KPUSA1H7LYPAIXXR"
-ZOHO_CLIENT_SECRET = "8477afd1c1d72332dea71a85cdb3e272ab94d5a790"
-ZOHO_REDIRECT_URI = "http://localhost:8000/oauth/zoho/callback"
+ZOHO_CLIENT_ID = os.environ.get("ZOHO_CLIENT_ID", "")
+ZOHO_CLIENT_SECRET = os.environ.get("ZOHO_CLIENT_SECRET", "")
+ZOHO_REDIRECT_URI = os.environ.get("ZOHO_REDIRECT_URI", "http://localhost:8000/oauth/zoho/callback")
 
-IMAP_HOST = "imap.zoho.com"
+IMAP_HOST = os.environ.get("IMAP_HOST", "imap.zoho.com")
 IMAP_PORT = 993
 IMAP_USER = EMAIL_HOST_USER
 IMAP_PASSWORD = EMAIL_HOST_PASSWORD
@@ -209,34 +222,20 @@ IMAP_PASSWORD = EMAIL_HOST_PASSWORD
 # }
 
 # Twilio Configurations
-TWILIO_API_KEY_SID = config(
-    "TWILIO_API_KEY_SID"
-)
-TWILIO_API_SECRET = config(
-    "TWILIO_API_SECRET"
-)
-TWILIO_ACCOUNT_SID = config(
-    "TWILIO_ACCOUNT_SID"
-)
-TWILIO_PHONE_NUMBER = config("TWILIO_PHONE_NUMBER")
-TWILIO_AUTH_TOKEN = config(
-    "TWILIO_AUTH_TOKEN"
-)
+TWILIO_API_KEY_SID = os.environ.get("TWILIO_API_KEY_SID")
+TWILIO_API_SECRET = os.environ.get("TWILIO_API_SECRET")
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 
 # Deepgram Configuration
-DEEPGRAM_API_KEY = config(
-    "DEEPGRAM_API_KEY"
-)
+DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY")
 
 # Groq AI Configuration
-GROQ_API_KEY = config(
-    "GROQ_API_KEY"
-)
+GROQ_API_KEY = config("GROQ_API_KEY")
 
 # WebSocket Stream URL (for Twilio to connect to)
-WEBSOCKET_STREAM_URL = config(
-    "WEBSOCKET_STREAM_URL", default="wss://shadeful-yun-filamentous.ngrok-free.dev"
-)
+WEBSOCKET_STREAM_URL = os.environ.get("WEBSOCKET_STREAM_URL", "wss://shadeful-yun-filamentous.ngrok-free.dev")
 ###################################
 #          LOGGING CONFIG         #
 ###################################

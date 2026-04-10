@@ -1,0 +1,198 @@
+{
+	"info": {
+		"_postman_id": "0beabe89-3221-4f1d-b570-5d6e27a69b03",
+		"name": "Smart Calling - Calibration endpoints",
+		"description": "Postman collection for the Seller Calibration Module",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. GET All Audios",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/calibration/audios/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"audios",
+						""
+					]
+				},
+				"description": "List all active calibration audios (Does not include the reference text to prevent cheating from sellers)."
+			},
+			"response": []
+		},
+		{
+			"name": "2. GET Reference Text",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/calibration/audios/1/text/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"audios",
+						"1",
+						"text",
+						""
+					]
+				},
+				"description": "Get the reference text for ONE audio (called after seller finishes listening to the audio)."
+			},
+			"response": []
+		},
+		{
+			"name": "3. POST Start Session",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/calibration/sessions/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"sessions",
+						""
+					]
+				},
+				"description": "Start a new calibration session to begin testing the seller."
+			},
+			"response": []
+		},
+		{
+			"name": "4. POST Upload Recording Attempt",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "session",
+							"value": "1",
+							"description": "The ID of the calibration session",
+							"type": "text"
+						},
+						{
+							"key": "audio",
+							"value": "1",
+							"description": "The ID of the calibration audio file",
+							"type": "text"
+						},
+						{
+							"key": "recording_file",
+							"description": "The audio recording file from the seller",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/calibration/attempts/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"attempts",
+						""
+					]
+				},
+				"description": "Upload seller recording to trigger Groq AI analysis on their speech."
+			},
+			"response": []
+		},
+		{
+			"name": "5. GET Single Session Detail",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/calibration/sessions/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"sessions",
+						"1",
+						""
+					]
+				},
+				"description": "Get session detail along with all of its attempt results and AI feedbacks."
+			},
+			"response": []
+		},
+		{
+			"name": "6. GET Seller Training History",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/calibration/history/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"calibration",
+						"history",
+						""
+					]
+				},
+				"description": "Get the seller’s past training history and previous sessions."
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000/api/dashboard/saler",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "YOUR_BEARER_TOKEN_HERE",
+			"type": "string"
+		}
+	]
+}
