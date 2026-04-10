@@ -8,11 +8,13 @@ from dotenv import load_dotenv
 import uvicorn
 from typing import List
 from asgiref.sync import sync_to_async
-from .stream import proxy
+
 # Configure Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 import django
 django.setup()
+
+from .stream import proxy
 from apps.calling.models import Call
 from apps.account.models import User
 

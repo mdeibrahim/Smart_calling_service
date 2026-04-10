@@ -13,3 +13,6 @@ logs/
 .logs
 debug.log
 errors.log
+
+
+RUN_FASTAPI_AND_RESTAPI.md
