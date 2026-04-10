@@ -46,7 +46,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"<YOUR_PASSWORD>\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"your_password_here\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/account/signin/",
@@ -64,7 +64,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"<YOUR_PASSWORD>\",\n  \"name\": \"John Doe\",\n  \"user_type\": \"sells\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"your_password_here\",\n  \"name\": \"John Doe\",\n  \"user_type\": \"sells\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/account/signup/",
@@ -115,7 +115,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"new_password\": \"<NEW_PASSWORD>\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"new_password\": \"your_new_password_here\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/account/reset-password/",

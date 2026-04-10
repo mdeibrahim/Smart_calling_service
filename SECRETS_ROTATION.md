@@ -6,7 +6,7 @@ The following secrets were **permanently exposed** in git history (commit `f98d1
 
 | Secret Type | Exposed Value | Action Required |
 |-------------|---------------|-----------------|
-| Django SECRET_KEY | `django-insecure-24f5e@!)uckgq3vqckh&zo2$m8v$bx)4d8=_*de5xg26*hksmk` | **ROTATE IMMEDIATELY** |
+| Django SECRET_KEY | `<REDACTED>` | **ROTATE IMMEDIATELY** |
 | ZOHO Email Password | `<REDACTED>` | **ROTATE IMMEDIATELY** |
 | ZOHO_CLIENT_ID | `<REDACTED>` | Regenerate OAuth credentials |
 | ZOHO_CLIENT_SECRET | `<REDACTED>` | Regenerate OAuth credentials |
